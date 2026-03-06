@@ -16,6 +16,7 @@ initialize_config() {
     echo "-o $DEFAULT_DIR/%(title)s.%(ext)s" >> "$CONFIG"
   fi
 }
+initialize_config
 
 get_download_dir() {
   if [[ -f "$CONFIG" ]] && grep -q "^-o" "$CONFIG"; then
@@ -34,15 +35,44 @@ set_download_dir() {
   fi
 }
 
+# ====== Handle arguments ===== #
+if [[ "$#" != 0 ]]; then
+  for arg in "$@"; do
+    case "$arg" in
+      "--help")
+        printf "ytd - yt-dlp wrapper\n"
+        printf "%-20s %s\n" "--help" "Display this help menu"
+        printf "%-20s %s\n" "--get-dir" "Display the current download directory path"
+        printf "%-20s %s\n" "--set-dir" "Change the download directory path"
+        ;;
+
+      "--get-dir")
+        current_download_dir=$(get_download_dir)
+        echo "All media is saved to: $current_download_dir"
+        ;;
+
+      "--set-dir")
+        set_download_dir
+        echo "Download directory changed successfully"
+        ;;
+
+      *)
+        printf "Invalid argument. Try --help for more information\n"
+        exit 1
+        ;;
+    esac
+  done
+
+  exit 0
+fi
+
 options=(
 "Download video"
 "Download audio (MP3)"
 "Download video + audio"
-"Change download location"
 "Exit"
 )
 
-initialize_config
 DOWNLOAD_DIR=$(get_download_dir)
 
 choice=$(printf "%s\n" "${options[@]}" | fzf --prompt="Select option > " --layout=reverse)
@@ -71,11 +101,6 @@ case "$choice" in
     ;;
 
   "${options[3]}")
-    set_download_dir
-    DOWNLOAD_DIR=$(get_download_dir)
-    ;;
-
-  "${options[4]}")
     exit 0
     ;;
 
