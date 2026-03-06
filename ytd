@@ -1,0 +1,82 @@
+#!/usr/bin/bash
+
+CONFIG="$HOME/.config/yt-dlp/config"
+DEFAULT_DIR="$HOME/downloads"
+
+cleanup() {
+  printf "\n\nInterrupted. Exiting...\n"
+  exit 0
+}
+trap cleanup SIGINT
+
+initialize_config() {
+  if [[ ! -f "$CONFIG" ]]; then
+    mkdir -p "$(dirname "$CONFIG")"
+  elif ! grep -q "^-o" "$CONFIG"; then
+    echo "-o $DEFAULT_DIR/%(title)s.%(ext)s" >> "$CONFIG"
+  fi
+}
+
+get_download_dir() {
+  if [[ -f "$CONFIG" ]] && grep -q "^-o" "$CONFIG"; then
+    grep "^-o" "$CONFIG" | sed 's/-o //' | sed 's/%(title)s.*//'
+  fi
+}
+
+set_download_dir() {
+  read -rp "Enter new directory path (relative to HOME directory): " newdir
+  new_download_dir="$HOME/$newdir"
+
+  mkdir -p "$new_download_dir"
+
+  if [[ -f "$CONFIG" ]] && grep -q "^-o" "$CONFIG"; then
+    sed -i "s|^-o .*|-o $new_download_dir/%(title)s.%(ext)s|" "$CONFIG"
+  fi
+}
+
+options=(
+"Download video"
+"Download audio (MP3)"
+"Download video + audio"
+"Change download location"
+"Exit"
+)
+
+initialize_config
+DOWNLOAD_DIR=$(get_download_dir)
+
+choice=$(printf "%s\n" "${options[@]}" | fzf --prompt="Select option > " --layout=reverse)
+
+case "$choice" in
+
+  "${options[0]}")
+    printf "Video only\n"
+    read -rp "Enter URL: " url
+    yt-dlp -f "bv*[ext=mp4]" --merge-output-format mp4 "$url"
+    echo "Saved to $DOWNLOAD_DIR"
+    ;;
+
+  "${options[1]}")
+    printf "Audio only\n"
+    read -rp "Enter URL: " url
+    yt-dlp -x --audio-format mp3 "$url"
+    echo "Saved to $DOWNLOAD_DIR"
+    ;;
+
+  "${options[2]}")
+    printf "Video + Audio\n"
+    read -rp "Enter URL: " url
+    yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" --merge-output-format mp4 "$url"
+    echo "Saved to $DOWNLOAD_DIR"
+    ;;
+
+  "${options[3]}")
+    set_download_dir
+    DOWNLOAD_DIR=$(get_download_dir)
+    ;;
+
+  "${options[4]}")
+    exit 0
+    ;;
+
+esac
