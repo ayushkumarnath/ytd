@@ -74,6 +74,7 @@ options=(
 )
 
 DOWNLOAD_DIR=$(get_download_dir)
+mkdir -p "$DOWNLOAD_DIR"
 
 choice=$(printf "%s\n" "${options[@]}" | fzf --prompt="Select option > " --layout=reverse)
 
