@@ -1,7 +1,7 @@
 #!/usr/bin/bash
 
 SRC_SCRIPT_NAME="ytd"
-TARGET_DIR="$HOME/.local/bin"
+TARGET_DIR="$HOME/.local/bin/custom"
 SRC_SCRIPT="$(pwd)/$SRC_SCRIPT_NAME"
 
 mkdir -p "$TARGET_DIR"
