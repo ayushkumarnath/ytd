@@ -65,36 +65,52 @@ download() {
   YT_DLP_STATUS=$?
 }
 
-# ====== Handle arguments ===== #
-if [[ "$#" != 0 ]]; then
-  for arg in "$@"; do
-    case "$arg" in
-      "--help")
-        printf "ytd - yt-dlp wrapper\n"
-        printf "%-20s %s\n" "--help" "Display this help menu"
-        printf "%-20s %s\n" "--get-dir" "Display the current download directory path"
-        printf "%-20s %s\n" "--set-dir" "Change the download directory path"
-        ;;
+print_help() {
+  printf "ytd - yt-dlp wrapper\n\n"
 
-      "--get-dir")
-        current_download_dir=$(get_download_dir)
-        echo "All media is saved to: $current_download_dir"
-        ;;
+  printf "Usage: ytd [OPTION]\n\n"
 
-      "--set-dir")
-        set_download_dir
-        echo "Download directory changed successfully"
-        ;;
+  printf "Options:\n"
+  printf "%-24s %s\n" "-h, --help" "Display this help menu"
+  printf "%-24s %s\n" "-gd, --get-dir" "Display the current download directory path"
+  printf "%-24s %s\n" "-sd, --set-dir" "Set/Change the download directory path"
+}
 
-      *)
-        printf "Invalid argument. Try --help for more information\n"
-        exit 1
-        ;;
-    esac
-  done
+print_error() {
+  printf "\nError: %s\n" "$1"
+  printf "See --help for more info\n"
+}
 
-  exit 0
+# ====== Argument parsing ===== #
+# This program is supposed to accept only single argument
+if [[ $# -gt 1 ]]; then
+  print_error "this program accepts only single option"
+  exit 1
 fi
+
+case "$1" in
+  "-h" | "--help")
+    print_help
+    exit 0
+    ;;
+
+  "-gd" | "--get-dir")
+    current_download_dir=$(get_download_dir)
+    echo "All media is saved to: $current_download_dir"
+    exit 0
+    ;;
+
+  "-sd" | "--set-dir")
+    set_download_dir
+    echo "Download directory changed successfully"
+    exit 0
+    ;;
+
+  *)
+    print_error "unknown option '$1'"
+    exit 1
+    ;;
+esac
 
 DOWNLOAD_DIR=$(get_download_dir)
 mkdir -p "$DOWNLOAD_DIR"
