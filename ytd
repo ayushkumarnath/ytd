@@ -2,6 +2,18 @@
 
 CONFIG="$HOME/.config/yt-dlp/config"
 DEFAULT_DIR="$HOME/downloads"
+YT_DLP_STATUS=0
+
+# Download types
+declare -r -A DOWNLOAD=( [VIDEO_ONLY]="Download video" [AUDIO_ONLY]="Download audio (MP3)" [AUDIO_VIDEO]="Download video + audio" )
+
+# Options presented to the user
+options=(
+"${DOWNLOAD[VIDEO_ONLY]}"
+"${DOWNLOAD[AUDIO_ONLY]}"
+"${DOWNLOAD[AUDIO_VIDEO]}"
+"Exit"
+)
 
 cleanup() {
   printf "\n\nInterrupted. Exiting...\n"
@@ -35,6 +47,24 @@ set_download_dir() {
   fi
 }
 
+download() {
+  read -rp "Enter URL: " url
+
+  case "$1" in
+    "${DOWNLOAD[VIDEO_ONLY]}")
+      yt-dlp -f "bv*[ext=mp4]" --merge-output-format mp4 "$url"
+    ;;
+    "${DOWNLOAD[AUDIO_ONLY]}")
+      yt-dlp -x --audio-format mp3 "$url"
+    ;;
+    "${DOWNLOAD[AUDIO_VIDEO]}")
+      yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" --merge-output-format mp4 "$url"
+    ;;
+  esac
+
+  YT_DLP_STATUS=$?
+}
+
 # ====== Handle arguments ===== #
 if [[ "$#" != 0 ]]; then
   for arg in "$@"; do
@@ -66,13 +96,6 @@ if [[ "$#" != 0 ]]; then
   exit 0
 fi
 
-options=(
-"Download video"
-"Download audio (MP3)"
-"Download video + audio"
-"Exit"
-)
-
 DOWNLOAD_DIR=$(get_download_dir)
 mkdir -p "$DOWNLOAD_DIR"
 
@@ -82,23 +105,17 @@ case "$choice" in
 
   "${options[0]}")
     printf "Video only\n"
-    read -rp "Enter URL: " url
-    yt-dlp -f "bv*[ext=mp4]" --merge-output-format mp4 "$url"
-    echo "Saved to $DOWNLOAD_DIR"
+    download "${options[0]}"
     ;;
 
   "${options[1]}")
     printf "Audio only\n"
-    read -rp "Enter URL: " url
-    yt-dlp -x --audio-format mp3 "$url"
-    echo "Saved to $DOWNLOAD_DIR"
+    download "${options[1]}"
     ;;
 
   "${options[2]}")
     printf "Video + Audio\n"
-    read -rp "Enter URL: " url
-    yt-dlp -f "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b" --merge-output-format mp4 "$url"
-    echo "Saved to $DOWNLOAD_DIR"
+    download "${options[2]}"
     ;;
 
   "${options[3]}")
@@ -106,3 +123,11 @@ case "$choice" in
     ;;
 
 esac
+
+if [[ $YT_DLP_STATUS -eq 0 ]]; then
+  echo "Saved to $DOWNLOAD_DIR"
+  exit 0
+else
+  echo "Error occurred"
+  exit 1
+fi
