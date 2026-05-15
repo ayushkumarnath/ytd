@@ -24,6 +24,7 @@ trap cleanup SIGINT
 initialize_config() {
   if [[ ! -f "$CONFIG" ]]; then
     mkdir -p "$(dirname "$CONFIG")"
+    echo "-o $DEFAULT_DIR/%(title)s.%(ext)s" > "$CONFIG"
   elif ! grep -q "^-o" "$CONFIG"; then
     echo "-o $DEFAULT_DIR/%(title)s.%(ext)s" >> "$CONFIG"
   fi
