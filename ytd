@@ -48,6 +48,14 @@ set_download_dir() {
   fi
 }
 
+require() {
+  if ! command -v "$1" >/dev/null 2>&1; then
+    printf "Error: dependency '%s' not found\n" "$1" >&2
+    printf "Please install the required dependencies\n\n" >&2
+    exit 1
+  fi
+}
+
 download() {
   read -rp "Enter URL: " url
 
@@ -113,6 +121,11 @@ elif [[ $# -eq 1 ]]; then
   esac
 fi
 
+# Dependency checks
+require yt-dlp
+require ffmpeg
+require node
+require fzf
 
 DOWNLOAD_DIR=$(get_download_dir)
 mkdir -p "$DOWNLOAD_DIR"
