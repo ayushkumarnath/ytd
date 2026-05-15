@@ -86,31 +86,32 @@ print_error() {
 if [[ $# -gt 1 ]]; then
   print_error "this program accepts only single option"
   exit 1
+elif [[ $# -eq 1 ]]; then
+  case "$1" in
+    "-h" | "--help")
+      print_help
+      exit 0
+      ;;
+
+    "-gd" | "--get-dir")
+      current_download_dir=$(get_download_dir)
+      echo "All media is saved to: $current_download_dir"
+      exit 0
+      ;;
+
+    "-sd" | "--set-dir")
+      set_download_dir
+      echo "Download directory changed successfully"
+      exit 0
+      ;;
+
+    *)
+      print_error "unknown option '$1'"
+      exit 1
+      ;;
+  esac
 fi
 
-case "$1" in
-  "-h" | "--help")
-    print_help
-    exit 0
-    ;;
-
-  "-gd" | "--get-dir")
-    current_download_dir=$(get_download_dir)
-    echo "All media is saved to: $current_download_dir"
-    exit 0
-    ;;
-
-  "-sd" | "--set-dir")
-    set_download_dir
-    echo "Download directory changed successfully"
-    exit 0
-    ;;
-
-  *)
-    print_error "unknown option '$1'"
-    exit 1
-    ;;
-esac
 
 DOWNLOAD_DIR=$(get_download_dir)
 mkdir -p "$DOWNLOAD_DIR"
