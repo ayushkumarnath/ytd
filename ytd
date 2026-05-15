@@ -87,7 +87,7 @@ print_help() {
 
 print_error() {
   printf "Error: %s\n" "$1" >&2
-  printf "See --help for more info\n"
+  printf "See --help for more info\n" >&2
 }
 
 # ====== Argument parsing ===== #
