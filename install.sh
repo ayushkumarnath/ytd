@@ -18,7 +18,7 @@ require() {
     printf "Please install the required dependencies\n\n" >&2
   fi
 }
-deps=("yt-dlp" "ffmpeg" "node" "fzf" "customsoft")
+deps=("yt-dlp" "ffmpeg" "node" "fzf")
 for dep in "${deps[@]}"; do
   require "$dep"
 done
