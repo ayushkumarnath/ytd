@@ -11,6 +11,7 @@ This script aims to avoid typing long, and complex `yt-dlp` commands by hand to 
 
 ```bash
 # Navigate to the .tar.gz file you downloaded
+# Replace '/path/to/tar.gz_file' with the actual path to the .tar.gz file
 cd /path/to/tar.gz_file
 
 # Extract the source files
@@ -22,6 +23,6 @@ chmod +x ./install.sh
 ./install.sh
 ```
 
-Now you can invoke the `ytd` script
+Now you can invoke the `ytd` script from anywhere
 
 **Note**: This script is exclusively for Linux only.
