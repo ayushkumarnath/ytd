@@ -18,10 +18,10 @@ require() {
     printf "Please install the required dependencies\n\n" >&2
   fi
 }
-require yt-dlp
-require ffmpeg
-require node
-require fzf
+deps=("yt-dlp" "ffmpeg" "node" "fzf" "customsoft")
+for dep in "${deps[@]}"; do
+  require "$dep"
+done
 
 cp "$SRC_SCRIPT" "$TARGET_DIR/$SRC_SCRIPT_NAME"
 chmod +x "$TARGET_DIR/$SRC_SCRIPT_NAME"
