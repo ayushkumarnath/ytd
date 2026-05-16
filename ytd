@@ -122,10 +122,10 @@ elif [[ $# -eq 1 ]]; then
 fi
 
 # Dependency checks
-require yt-dlp
-require ffmpeg
-require node
-require fzf
+deps=("yt-dlp" "ffmpeg" "node" "fzf")
+for dep in "${deps[@]}"; do
+  require "$dep"
+done
 
 DOWNLOAD_DIR=$(get_download_dir)
 mkdir -p "$DOWNLOAD_DIR"
