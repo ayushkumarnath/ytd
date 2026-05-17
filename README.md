@@ -9,12 +9,13 @@ This script aims to avoid typing long, and complex `yt-dlp` commands by hand to 
 - Go to the [releases](https://github.com/ayushknath/ytd/releases) page and download the `.tar.gz` file to your computer
 - Open a terminal, and use the commands below to install the script
 
-```bash
+```shell
 # Navigate to the .tar.gz file you downloaded
 # Replace '/path/to/tar.gz_file' with the actual path to the .tar.gz file
 cd /path/to/tar.gz_file
 
 # Extract the source files
+# Replace 'ytd-1.0.0.tar.gz' with the actual filename that you downloaded
 tar -xvzf ./ytd-1.0.0.tar.gz
 
 # Navigate inside the extracted directory and run the install script
