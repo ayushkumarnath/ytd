@@ -50,9 +50,7 @@ set_download_dir() {
 
 require() {
   if ! command -v "$1" >/dev/null 2>&1; then
-    printf "Error: dependency '%s' not found\n" "$1" >&2
-    printf "Please install the required dependencies\n\n" >&2
-    exit 1
+    missing_deps+=("$1")
   fi
 }
 
@@ -123,10 +121,20 @@ fi
 
 # Dependency checks
 deps=("yt-dlp" "ffmpeg" "node" "fzf")
+missing_deps=()
 for dep in "${deps[@]}"; do
   require "$dep"
 done
 
+if [[ ${#missing_deps[@]} -ne 0 ]]; then
+  for dep in "${missing_deps[@]}"; do
+    printf "Error: dependency '%s' not found\n" "$dep" >&2
+  done
+  printf "Please install the required dependencies\n\n" >&2
+  exit 1
+fi
+
+# Program starts
 DOWNLOAD_DIR=$(get_download_dir)
 mkdir -p "$DOWNLOAD_DIR"
 
