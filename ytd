@@ -4,6 +4,10 @@ CONFIG="$HOME/.config/yt-dlp/config"
 DEFAULT_DIR="$HOME/downloads"
 YT_DLP_STATUS=0
 
+# Colors
+RED='\033[0;31m'
+RESET='\033[0m'
+
 # Download types
 declare -r -A DOWNLOAD=( [VIDEO_ONLY]="Download video" [AUDIO_ONLY]="Download audio (MP3)" [AUDIO_VIDEO]="Download video + audio" )
 
@@ -128,7 +132,7 @@ done
 
 if [[ ${#missing_deps[@]} -ne 0 ]]; then
   for dep in "${missing_deps[@]}"; do
-    printf "Error: dependency '%s' not found\n" "$dep" >&2
+    printf "${RED}Error:${RESET} dependency '%s' not found\n" "$dep" >&2
   done
   printf "Please install the required dependencies\n\n" >&2
   exit 1

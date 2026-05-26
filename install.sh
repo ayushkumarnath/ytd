@@ -6,6 +6,10 @@ TARGET_DIR="$HOME/.local/bin/custom"
 SHELL_CONFIG_NAME=".bashrc"
 SHELL_CONFIG="$HOME/$SHELL_CONFIG_NAME"
 
+# Colors
+YELLOW='\033[0;33m'
+RESET='\033[0m'
+
 printf "Creating target directory..."
 
 mkdir -p "$TARGET_DIR"
@@ -69,7 +73,7 @@ done
 if [[ ${#missing_deps[@]} -ne 0 ]]; then
   printf "\n"
   for dep in "${missing_deps[@]}"; do
-    printf "Warning: dependency '%s' not found\n" "$dep" >&2
+    printf "${YELLOW}Warning:${RESET} dependency '%s' not found\n" "$dep" >&2
   done
   printf "Please install the required dependencies\n\n" >&2
 fi
