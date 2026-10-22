@@ -58,3 +58,14 @@ python3 -m unittest discover -s tests -v
 
 The tests mock external commands and use temporary directories.
 
+## Releases
+
+To publish a release, make sure `VERSION` in `ytd.py` matches the version tag, such as `2.0.0` and `v2.0.0`. Push the tag to GitHub:
+
+```sh
+git tag v2.0.0
+git push origin v2.0.0
+```
+
+GitHub Actions runs the tests, checks that the tag matches `VERSION`, packages the app files, and publishes a GitHub Release with the `.tar.gz` archive attached.
+
