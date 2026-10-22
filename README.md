@@ -1,29 +1,60 @@
-# YTD - yt-dlp wrapper
+# YTD — yt-dlp wrapper
 
-## About
+YTD is a Python command-line wrapper for `yt-dlp`. It provides an interactive menu for downloading video, audio as MP3, or video with audio.
 
-This script aims to avoid typing long, and complex `yt-dlp` commands by hand to download video and/or audio. Now just type `ytd`, select your preferred media type, enter the URL, and that's it.
+## Requirements
 
-## Installation
+- Linux
+- Python 3
+- `yt-dlp`
+- `ffmpeg`
+- `node`
+- `fzf`
 
-- Go to the [releases](https://github.com/ayushknath/ytd/releases) page and download the `.tar.gz` file to your computer
-- Open a terminal, and use the commands below to install the script
+YTD checks for these external tools when it starts.
 
-```shell
-# Navigate to the .tar.gz file you downloaded
-# Replace '/path/to/tar.gz_file' with the actual path to the .tar.gz file
-cd /path/to/tar.gz_file
+## Run
 
-# Extract the source files
-# Replace 'ytd-1.0.0.tar.gz' with the actual filename that you downloaded
-tar -xvzf ./ytd-1.0.0.tar.gz
+From the project directory, run:
 
-# Navigate inside the extracted directory and run the install script
-cd ./ytd-1.0.0/
-chmod +x ./install.sh
-./install.sh
+```sh
+python3 ytd.py
 ```
 
-Now you can invoke the `ytd` script from anywhere
+Choose a download type, then enter the media URL. Choose **Exit** to quit.
 
-**Note**: This script is exclusively for Linux only.
+## Install
+
+From the project directory, run:
+
+```sh
+./install.sh
+source ~/.bashrc
+```
+
+The installer copies `ytd.py` as an executable named `ytd` into `~/.local/bin`. It adds that directory to `~/.bashrc` if needed. Start a new shell or source `~/.bashrc` before invoking `ytd` from anywhere.
+
+### Options
+
+```sh
+python3 ytd.py --help
+python3 ytd.py --get-dir
+python3 ytd.py --set-dir
+```
+
+`--get-dir` displays the current download directory. `--set-dir` prompts for a directory path relative to your home directory.
+
+## Download directory
+
+YTD reads its yt-dlp config from `~/.config/yt-dlp/config`. If the config does not exist or has no output option, YTD initializes it to save media under `~/downloads`.
+
+## Tests
+
+Run the test suite with Python's built-in unittest runner:
+
+```sh
+python3 -m unittest discover -s tests -v
+```
+
+The tests mock external commands and use temporary directories.
+

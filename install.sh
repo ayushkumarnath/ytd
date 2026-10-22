@@ -1,94 +1,54 @@
-#!/usr/bin/bash
+#!/usr/bin/env bash
 
-SRC_SCRIPT_NAME="ytd"
-SRC_SCRIPT="$(pwd)/$SRC_SCRIPT_NAME"
-TARGET_DIR="$HOME/.local/bin/custom"
-SHELL_CONFIG_NAME=".bashrc"
-SHELL_CONFIG="$HOME/$SHELL_CONFIG_NAME"
+set -e
+
+SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
+SRC_SCRIPT="$SCRIPT_DIR/ytd.py"
+TARGET_DIR="$HOME/.local/bin"
+SHELL_CONFIG="$HOME/.bashrc"
 
 # Colors
 YELLOW='\033[0;33m'
 RESET='\033[0m'
 
-printf "Creating target directory..."
-
-mkdir -p "$TARGET_DIR"
-
-printf "done\n\n"
-
-# Adds TARGET_DIR to PATH, if not already present
-PATH_STRING="export PATH=\"${TARGET_DIR}:\$PATH\""
-is_target_in_path=0
-
-if [[ -f "$SHELL_CONFIG" ]]; then
-  printf "Searching PATH for target directory..."
-
-  if ! { grep -xFq "export PATH=\"\$HOME/.local/bin/custom:\$PATH\"" "$SHELL_CONFIG" || grep -xFq "$PATH_STRING" "$SHELL_CONFIG"; }; then
-    printf "done\n\n"
-    printf "\tAdding target directory to PATH..."
-
-    printf "\n# ADD '${TARGET_DIR}' to PATH\n${PATH_STRING}\n" >>"$SHELL_CONFIG"
-
-    is_target_in_path=1
-
-    printf "done\n\n"
-  fi
-
-  if [[ $is_target_in_path -eq 0 ]]; then
-    printf "done\n\n"
-  fi
-else
-  printf "\tAdding target directory to PATH..."
-
-  printf "\n# ADD '${TARGET_DIR}' to PATH\n${PATH_STRING}\n" >"$SHELL_CONFIG"
-
-  is_target_in_path=1
-
-  printf "done\n\n"
-fi
-
 if [[ ! -f "$SRC_SCRIPT" ]]; then
-  printf "Error: $SRC_SCRIPT does not exist\n" >&2
+  printf "Error: %s does not exist\n" "$SRC_SCRIPT" >&2
   exit 1
 fi
 
-# Dependency check
-are_deps_ok=0
+if ! command -v python3 >/dev/null 2>&1; then
+  printf "Error: dependency 'python3' not found\n" >&2
+  exit 1
+fi
 
-require() {
-  if ! command -v "$1" >/dev/null 2>&1; then
-    missing_deps+=("$1")
-    are_deps_ok=1
-  fi
-}
+mkdir -p "$TARGET_DIR"
 
-printf "Checking dependencies..."
+# Add the install directory to PATH if it is not already configured.
+PATH_STRING="export PATH=\"$TARGET_DIR:\$PATH\""
+if [[ ! -f "$SHELL_CONFIG" ]] || ! grep -Fqx "$PATH_STRING" "$SHELL_CONFIG"; then
+  printf "\n# Add YTD to PATH\n%s\n" "$PATH_STRING" >> "$SHELL_CONFIG"
+  printf "Added %s to PATH in %s\n" "$TARGET_DIR" "$SHELL_CONFIG"
+fi
 
-deps=("yt-dlp" "ffmpeg" "node" "fzf")
+cp "$SRC_SCRIPT" "$TARGET_DIR/ytd"
+chmod +x "$TARGET_DIR/ytd"
+
+# Check runtime tools. The app reports missing tools when it is run.
 missing_deps=()
-for dep in "${deps[@]}"; do
-  require "$dep"
+for dep in yt-dlp ffmpeg node fzf; do
+  if ! command -v "$dep" >/dev/null 2>&1; then
+    missing_deps+=("$dep")
+  fi
 done
 
-if [[ ${#missing_deps[@]} -ne 0 ]]; then
-  printf "\n"
+if [[ ${#missing_deps[@]} -gt 0 ]]; then
   for dep in "${missing_deps[@]}"; do
     printf "${YELLOW}Warning:${RESET} dependency '%s' not found\n" "$dep" >&2
   done
-  printf "Please install the required dependencies\n\n" >&2
+  printf "Install the missing tools before using YTD.\n" >&2
 fi
 
-if [[ $are_deps_ok -eq 0 ]]; then
-  printf "done\n\n"
-fi
-
-printf "Beginning installation...\n"
-
-cp "$SRC_SCRIPT" "$TARGET_DIR/$SRC_SCRIPT_NAME"
-chmod +x "$TARGET_DIR/$SRC_SCRIPT_NAME"
-
-printf "Installed $SRC_SCRIPT_NAME to '$TARGET_DIR' successfully\n"
-
-if [[ $is_target_in_path -eq 1 ]]; then
-  printf "\nPlease restart your terminal or run 'source $SHELL_CONFIG'\n"
+printf "Installed YTD to '%s'\n" "$TARGET_DIR"
+if [[ ":$PATH:" != *":$TARGET_DIR:"* ]]; then
+  printf "Run 'source %s' or restart your shell to update PATH.\n" "$SHELL_CONFIG"
 fi
