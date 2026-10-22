@@ -3,6 +3,8 @@
 import signal, sys, shutil, subprocess
 from pathlib import Path
 
+VERSION = "2.0.0"
+
 write = sys.stdout.write
 error = sys.stderr.write
 
@@ -159,6 +161,7 @@ def print_help():
 
     write("Options:\n")
     write("%-24s %s\n" % ("-h, --help", "Display this help menu"))
+    write("%-24s %s\n" % ("-v, --version", "Display version information"))
     write(
         "%-24s %s\n" % ("-gd, --get-dir", "Display the current download directory path")
     )
@@ -181,6 +184,9 @@ def parse_arguments(args):
 
         if argument in ("-h", "--help"):
             print_help()
+            sys.exit(0)
+        elif argument in ("-v", "--version"):
+            write(f"ytd {VERSION}\n")
             sys.exit(0)
         elif argument in ("-gd", "--get-dir"):
             print(f"All media is saved to: {get_download_dir()}")
