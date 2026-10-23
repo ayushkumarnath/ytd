@@ -67,9 +67,6 @@ def initialize_config():
             file.write(f"-o {DEFAULT_DIR}/%(title)s.%(ext)s")
 
 
-initialize_config()
-
-
 def get_download_dir():
     extracted_download_path = None
 
@@ -233,6 +230,8 @@ def fzf_process():
 
 # Program starts
 def main(args):
+    initialize_config()
+
     try:
         parse_arguments(args)
         check_dependencies()
