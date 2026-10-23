@@ -3,7 +3,7 @@
 import signal, sys, shutil, subprocess
 from pathlib import Path
 
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 
 write = sys.stdout.write
 error = sys.stderr.write
