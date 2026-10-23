@@ -10,7 +10,7 @@ from .menu import fzf_process, options
 from .settings import RED, RESET
 
 
-VERSION = "2.0.2"
+VERSION = "2.0.3"
 
 
 def print_error(err_msg):
