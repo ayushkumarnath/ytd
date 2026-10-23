@@ -89,6 +89,8 @@ def main(args):
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     choice = fzf_process()
+    if choice is None:
+        return 0
 
     if choice == options[0]:
         write("Video only\n")

@@ -3,6 +3,7 @@ name: Tests and Release
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -24,7 +25,7 @@ jobs:
         run: python -m unittest discover -s tests -v
 
   release:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
     needs: test
     runs-on: ubuntu-latest
     permissions:
@@ -40,11 +41,24 @@ jobs:
         id: version
         env:
           BEFORE_SHA: ${{ github.event.before }}
+          PUSH_REF: ${{ github.ref }}
         run: |
           current_version=$(sed -nE 's/^VERSION = "([^"]+)"/\1/p' ytd_cli/cli.py | head -n 1)
           if [[ ! "$current_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "Invalid or missing VERSION in ytd_cli/cli.py: '$current_version'" >&2
             exit 1
+          fi
+
+          if [[ "$PUSH_REF" == refs/tags/v* ]]; then
+            tagged_version="${PUSH_REF#refs/tags/v}"
+            if [[ "$tagged_version" != "$current_version" ]]; then
+              echo "Tag version $tagged_version does not match VERSION $current_version" >&2
+              exit 1
+            fi
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$current_version" >> "$GITHUB_OUTPUT"
+            echo "Tag matches application version $current_version"
+            exit 0
           fi
 
           previous_version=""

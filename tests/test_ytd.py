@@ -223,7 +223,8 @@ class CliTests(unittest.TestCase):
             cli, "error", errors.write
         ):
             self.assertEqual(cli.main([]), 1)
-        self.assertIn("cannot resolve download directory", errors.getvalue())
+        self.assertIn("Error: download directory is not set", errors.getvalue())
+        self.assertIn("Use '-sd' to set download directory", errors.getvalue())
 
     def test_main_download_flow_reports_saved_location(self):
         output = io.StringIO()
@@ -256,7 +257,7 @@ class CliTests(unittest.TestCase):
             self.assertEqual(cli.main([]), 1)
         self.assertIn("Error occurred", errors.getvalue())
 
-    def test_main_treats_menu_cancellation_as_failure(self):
+    def test_main_does_not_download_when_menu_is_cancelled(self):
         errors = io.StringIO()
         with mock.patch.object(cli, "initialize_config"), mock.patch.object(
             cli, "check_dependencies"
@@ -264,19 +265,23 @@ class CliTests(unittest.TestCase):
             cli, "get_download_dir", return_value=self.download_dir
         ), mock.patch.object(
             cli, "fzf_process", return_value=None
-        ), mock.patch.object(cli, "error", errors.write):
-            self.assertEqual(cli.main([]), 1)
-        self.assertIn("Error occurred", errors.getvalue())
+        ), mock.patch.object(cli, "download") as download, mock.patch.object(
+            cli, "error", errors.write
+        ):
+            self.assertEqual(cli.main([]), 0)
+        download.assert_not_called()
+        self.assertEqual(errors.getvalue(), "")
 
     def test_main_exits_when_user_selects_exit(self):
         with mock.patch.object(cli, "initialize_config"), mock.patch.object(
             cli, "check_dependencies"
         ), mock.patch.object(
             cli, "get_download_dir", return_value=self.download_dir
-        ), mock.patch.object(cli, "fzf_process", return_value=menu.options[3]):
-            with self.assertRaises(SystemExit) as raised:
-                cli.main([])
-        self.assertEqual(raised.exception.code, 0)
+        ), mock.patch.object(
+            cli, "fzf_process", return_value=menu.options[3]
+        ), mock.patch.object(cli, "download") as download:
+            self.assertEqual(cli.main([]), 0)
+        download.assert_not_called()
 
 
 if __name__ == "__main__":
