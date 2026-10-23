@@ -1,9 +1,8 @@
-name: Tests
+name: Tests and Release
 
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -25,34 +24,73 @@ jobs:
         run: python -m unittest discover -s tests -v
 
   release:
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: test
     runs-on: ubuntu-latest
     permissions:
       contents: write
 
     steps:
-      - name: Check out repository
+      - name: Check out repository history
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
-      - name: Package release files
+      - name: Detect version bump
+        id: version
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
         run: |
-          version="${GITHUB_REF_NAME#v}"
-          if ! grep -Fxq "VERSION = \"$version\"" ytd.py; then
-            echo "Tag version ${GITHUB_REF_NAME} does not match VERSION in ytd.py" >&2
+          current_version=$(sed -nE 's/^VERSION = "([^"]+)"/\1/p' ytd_cli/cli.py | head -n 1)
+          if [[ ! "$current_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "Invalid or missing VERSION in ytd_cli/cli.py: '$current_version'" >&2
             exit 1
           fi
-          release_dir="ytd-${GITHUB_REF_NAME}"
+
+          previous_version=""
+          if [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]]; then
+            if git cat-file -e "$BEFORE_SHA:ytd_cli/cli.py" 2>/dev/null; then
+              previous_version=$(git show "$BEFORE_SHA:ytd_cli/cli.py" | sed -nE 's/^VERSION = "([^"]+)"/\1/p' | head -n 1)
+            elif git cat-file -e "$BEFORE_SHA:ytd.py" 2>/dev/null; then
+              previous_version=$(git show "$BEFORE_SHA:ytd.py" | sed -nE 's/^VERSION = "([^"]+)"/\1/p' | head -n 1)
+            fi
+          fi
+
+          if [[ "$current_version" == "$previous_version" || -z "$previous_version" ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No version bump detected; skipping release."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "version=$current_version" >> "$GITHUB_OUTPUT"
+            echo "Detected version bump: $previous_version -> $current_version"
+          fi
+
+      - name: Package release archive
+        if: steps.version.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          release_dir="ytd-v${VERSION}"
           mkdir "$release_dir"
           cp ytd.py install.sh README.md "$release_dir/"
+          cp -R ytd_cli "$release_dir/"
           chmod +x "$release_dir/install.sh"
           tar -czf "${release_dir}.tar.gz" "$release_dir"
 
       - name: Publish GitHub Release
+        if: steps.version.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            "ytd-${GITHUB_REF_NAME}.tar.gz" \
-            --title "YTD ${GITHUB_REF_NAME}" \
-            --generate-notes
+          tag="v${VERSION}"
+          archive="ytd-${tag}.tar.gz"
+
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$archive" --clobber
+          else
+            gh release create "$tag" "$archive" \
+              --title "YTD ${tag}" \
+              --target "$GITHUB_SHA" \
+              --generate-notes
+          fi

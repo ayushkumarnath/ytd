@@ -64,12 +64,5 @@ The tests mock external commands and use temporary directories.
 
 ## Releases
 
-To publish a release, make sure `VERSION` in `ytd_cli/cli.py` matches the version tag, such as `2.0.0` and `v2.0.0`. Push the tag to GitHub:
-
-```sh
-git tag v2.0.0
-git push origin v2.0.0
-```
-
-The release workflow must check the version in `ytd_cli/cli.py` and include the `ytd_cli/` package in its archive along with `ytd.py`, `install.sh`, and this README. The current workflow still needs to be updated for the new package layout before tagged releases will work.
+To publish a release, update `VERSION` in `ytd_cli/cli.py` and push the change to `main`. After the test job passes, GitHub Actions detects the version change, creates a `vVERSION` release, and attaches an archive containing the launcher and `ytd_cli/` package. A push that does not change `VERSION` does not publish a release.
 
