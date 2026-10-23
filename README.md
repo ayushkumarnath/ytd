@@ -32,7 +32,11 @@ From the project directory, run:
 source ~/.bashrc
 ```
 
-The installer copies `ytd.py` as an executable named `ytd` into `~/.local/bin`. It adds that directory to `~/.bashrc` if needed. Start a new shell or source `~/.bashrc` before invoking `ytd` from anywhere.
+The installer installs the launcher as `~/.local/bin/ytd` (the command name is `ytd`, without a `.py` suffix) and installs the `ytd_cli/` Python package alongside it. It adds `~/.local/bin` to `~/.bashrc` if needed. Start a new shell or source `~/.bashrc`, then run the installed program with:
+
+```sh
+ytd
+```
 
 ### Options
 
@@ -60,12 +64,12 @@ The tests mock external commands and use temporary directories.
 
 ## Releases
 
-To publish a release, make sure `VERSION` in `ytd.py` matches the version tag, such as `2.0.0` and `v2.0.0`. Push the tag to GitHub:
+To publish a release, make sure `VERSION` in `ytd_cli/cli.py` matches the version tag, such as `2.0.0` and `v2.0.0`. Push the tag to GitHub:
 
 ```sh
 git tag v2.0.0
 git push origin v2.0.0
 ```
 
-GitHub Actions runs the tests, checks that the tag matches `VERSION`, packages the app files, and publishes a GitHub Release with the `.tar.gz` archive attached.
+The release workflow must check the version in `ytd_cli/cli.py` and include the `ytd_cli/` package in its archive along with `ytd.py`, `install.sh`, and this README. The current workflow still needs to be updated for the new package layout before tagged releases will work.
 

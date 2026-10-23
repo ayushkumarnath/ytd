@@ -4,6 +4,7 @@ set -e
 
 SCRIPT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 SRC_SCRIPT="$SCRIPT_DIR/ytd.py"
+SRC_PACKAGE="$SCRIPT_DIR/ytd_cli"
 TARGET_DIR="$HOME/.local/bin"
 SHELL_CONFIG="$HOME/.bashrc"
 
@@ -13,6 +14,11 @@ RESET='\033[0m'
 
 if [[ ! -f "$SRC_SCRIPT" ]]; then
   printf "Error: %s does not exist\n" "$SRC_SCRIPT" >&2
+  exit 1
+fi
+
+if [[ ! -d "$SRC_PACKAGE" ]]; then
+  printf "Error: %s does not exist\n" "$SRC_PACKAGE" >&2
   exit 1
 fi
 
@@ -30,8 +36,8 @@ if [[ ! -f "$SHELL_CONFIG" ]] || ! grep -Fqx "$PATH_STRING" "$SHELL_CONFIG"; the
   printf "Added %s to PATH in %s\n" "$TARGET_DIR" "$SHELL_CONFIG"
 fi
 
-cp "$SRC_SCRIPT" "$TARGET_DIR/ytd"
-chmod +x "$TARGET_DIR/ytd"
+install -m 755 "$SRC_SCRIPT" "$TARGET_DIR/ytd"
+cp -R "$SRC_PACKAGE" "$TARGET_DIR/"
 
 # Check runtime tools. The app reports missing tools when it is run.
 missing_deps=()
