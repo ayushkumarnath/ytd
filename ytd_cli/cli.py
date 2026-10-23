@@ -9,7 +9,7 @@ from .exceptions import CLIError
 from .menu import fzf_process, options
 
 
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 
 
 def print_error(err_msg):
