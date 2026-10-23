@@ -4,9 +4,9 @@ from .downloader import DOWNLOAD
 
 # Options presented to the user
 options = (
-    f"{DOWNLOAD['VIDEO_ONLY']}",
-    f"{DOWNLOAD['AUDIO_ONLY']}",
-    f"{DOWNLOAD['AUDIO_VIDEO']}",
+    DOWNLOAD["VIDEO_ONLY"],
+    DOWNLOAD["AUDIO_ONLY"],
+    DOWNLOAD["AUDIO_VIDEO"],
     "Exit",
 )
 

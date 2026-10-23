@@ -7,6 +7,7 @@ from .dependencies import check_dependencies
 from .downloader import download
 from .exceptions import CLIError
 from .menu import fzf_process, options
+from .settings import RED, RESET
 
 
 VERSION = "2.0.2"
@@ -81,25 +82,24 @@ def main(args):
     DOWNLOAD_DIR = get_download_dir()
 
     if DOWNLOAD_DIR is None:
-        error("Error: cannot resolve download directory")
+        error(f"{RED}Error: download directory is not set{RESET}")
+        error("Use '-sd' to set download directory. For help menu use '-h'")
         return 1
 
     DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
 
     choice = fzf_process()
-    yt_dlp_status = None
 
     if choice == options[0]:
         write("Video only\n")
-        yt_dlp_status = download(options[0])
     elif choice == options[1]:
         write("Audio only\n")
-        yt_dlp_status = download(options[1])
     elif choice == options[2]:
         write("Video + Audio\n")
-        yt_dlp_status = download(options[2])
     elif choice == options[3]:
-        sys.exit(0)
+        return 0
+
+    yt_dlp_status = download(choice)
 
     if yt_dlp_status == 0:
         write(f"Saved to {DOWNLOAD_DIR}\n")
