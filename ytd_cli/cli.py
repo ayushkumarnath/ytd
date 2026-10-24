@@ -33,7 +33,7 @@ def print_help():
 
 
 def print_version():
-    write(f"ytd {VERSION}\n")
+    write(f"ytd v{VERSION}\n")
 
 
 def parse_arguments(args):
