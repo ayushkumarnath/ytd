@@ -190,6 +190,12 @@ class CliTests(unittest.TestCase):
         self.assertIn("--get-dir", output.getvalue())
         self.assertIn("--set-dir", output.getvalue())
 
+    def test_print_version_includes_v_prefix(self):
+        output = io.StringIO()
+        with mock.patch.object(cli, "write", output.write):
+            cli.print_version()
+        self.assertEqual(output.getvalue(), f"ytd v{cli.VERSION}\n")
+
     def test_parse_help_exits_successfully(self):
         with mock.patch.object(cli, "print_help") as print_help:
             with self.assertRaises(SystemExit) as raised:

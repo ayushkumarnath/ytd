@@ -5,7 +5,7 @@ YTD is a Python command-line wrapper for `yt-dlp`. It provides an interactive me
 ## Requirements
 
 - Linux
-- Python 3
+- Python 3.14.4 or newer
 - `yt-dlp`
 - `ffmpeg`
 - `node`
@@ -15,13 +15,15 @@ YTD checks for these external tools when it starts.
 
 ## Run
 
-From the project directory, run:
+For development, install [uv](https://docs.astral.sh/uv/) and run from the project directory:
 
 ```sh
-python3 ytd.py
+uv run python ytd.py
 ```
 
 Choose a download type, then enter the media URL. Choose **Exit** to quit.
+
+The project pins Python 3.15.1 for local development in `.python-version`; the declared minimum supported version is Python 3.14.4.
 
 ## Install
 
@@ -54,10 +56,10 @@ YTD reads its yt-dlp config from `~/.config/yt-dlp/config`. If the config does n
 
 ## Tests
 
-Run the test suite with Python's built-in unittest runner:
+Run the test suite with uv:
 
 ```sh
-python3 -m unittest discover -s tests -v
+uv run python -m unittest discover -s tests -v
 ```
 
 The tests mock external commands and use temporary directories.
