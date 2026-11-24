@@ -75,7 +75,7 @@ class ConfigTests(unittest.TestCase):
 class DownloaderTests(unittest.TestCase):
     def test_download_builds_video_command_and_returns_status(self):
         with mock.patch(
-            "builtins.input", return_value="https://example.test/video"
+            "builtins.input", side_effect=["https://example.test/video", "n"]
         ), mock.patch.object(
             downloader.subprocess, "run", return_value=mock.Mock(returncode=0)
         ) as run:
@@ -106,8 +106,33 @@ class DownloaderTests(unittest.TestCase):
         )
         self.assertEqual(result, 0)
 
+    def test_download_embeds_subtitles_when_user_accepts(self):
+        with mock.patch("builtins.input", side_effect=["url", "Y"]), mock.patch.object(
+            downloader.subprocess, "run", return_value=mock.Mock(returncode=0)
+        ) as run:
+            downloader.download(downloader.DOWNLOAD["VIDEO_ONLY"])
+
+        self.assertEqual(
+            run.call_args.args[0],
+            [
+                "yt-dlp", "--embed-subs", "--sub-langs", "en.*,-live_chat",
+                "--sub-format", "srt", "-f", "bv*[ext=mp4]",
+                "--merge-output-format", "mp4", "url",
+            ],
+        )
+
+    def test_download_omits_subtitles_when_user_declines(self):
+        errors = io.StringIO()
+        with mock.patch("builtins.input", side_effect=["url", "n"]), mock.patch.object(
+            downloader.subprocess, "run", return_value=mock.Mock(returncode=0)
+        ) as run, mock.patch.object(downloader, "error", errors.write):
+            downloader.download(downloader.DOWNLOAD["VIDEO_ONLY"])
+
+        self.assertNotIn("--embed-subs", run.call_args.args[0])
+        self.assertIn("Moving on with no subtitles", errors.getvalue())
+
     def test_download_builds_video_and_audio_command(self):
-        with mock.patch("builtins.input", return_value="url"), mock.patch.object(
+        with mock.patch("builtins.input", side_effect=["url", "Y"]), mock.patch.object(
             downloader.subprocess, "run", return_value=mock.Mock(returncode=0)
         ) as run:
             downloader.download(downloader.DOWNLOAD["AUDIO_VIDEO"])
@@ -116,12 +141,29 @@ class DownloaderTests(unittest.TestCase):
             run.call_args.args[0],
             [
                 "yt-dlp",
+                "--embed-subs",
+                "--sub-langs",
+                "en.*,-live_chat",
+                "--sub-format",
+                "srt",
                 "-f",
                 "bv*[ext=mp4]+ba[ext=m4a]/b[ext=mp4] / bv*+ba/b",
                 "--merge-output-format",
                 "mp4",
                 "url",
             ],
+        )
+
+    def test_download_audio_does_not_ask_about_subtitles(self):
+        with mock.patch("builtins.input", return_value="url") as user_input, mock.patch.object(
+            downloader.subprocess, "run", return_value=mock.Mock(returncode=0)
+        ) as run:
+            downloader.download(downloader.DOWNLOAD["AUDIO_ONLY"])
+
+        user_input.assert_called_once_with("Enter URL: ")
+        self.assertEqual(
+            run.call_args.args[0],
+            ["yt-dlp", "-x", "--audio-format", "mp3", "url"],
         )
 
     def test_download_returns_failure_status_when_subprocess_fails(self):
