@@ -66,5 +66,5 @@ The tests mock external commands and use temporary directories.
 
 ## Releases
 
-To publish a release, update `VERSION` in `ytd_cli/cli.py` and push the change to `main`, or push a matching `vVERSION` tag. After the test job passes, GitHub Actions creates or updates the release and attaches an archive containing the launcher and `ytd_cli/` package. A tag whose version does not match `VERSION` fails validation.
+To publish a release, update `VERSION` in `ytd_cli/version.py` and push the change to `main`, or push a matching `vVERSION` tag. After the test job passes, GitHub Actions creates or updates the release and attaches an archive containing the launcher and `ytd_cli/` package. A tag whose version does not match `VERSION` fails validation.
 

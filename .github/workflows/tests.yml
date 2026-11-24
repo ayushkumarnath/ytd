@@ -47,9 +47,9 @@ jobs:
           BEFORE_SHA: ${{ github.event.before }}
           PUSH_REF: ${{ github.ref }}
         run: |
-          current_version=$(sed -nE 's/^VERSION = "([^"]+)"/\1/p' ytd_cli/cli.py | head -n 1)
+          current_version=$(sed -nE 's/^VERSION = "([^"]+)"/\1/p' ytd_cli/version.py | head -n 1)
           if [[ ! "$current_version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Invalid or missing VERSION in ytd_cli/cli.py: '$current_version'" >&2
+            echo "Invalid or missing VERSION in ytd_cli/version.py: '$current_version'" >&2
             exit 1
           fi
 
@@ -67,7 +67,9 @@ jobs:
 
           previous_version=""
           if [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]]; then
-            if git cat-file -e "$BEFORE_SHA:ytd_cli/cli.py" 2>/dev/null; then
+            if git cat-file -e "$BEFORE_SHA:ytd_cli/version.py" 2>/dev/null; then
+              previous_version=$(git show "$BEFORE_SHA:ytd_cli/version.py" | sed -nE 's/^VERSION = "([^"]+)"/\1/p' | head -n 1)
+            elif git cat-file -e "$BEFORE_SHA:ytd_cli/cli.py" 2>/dev/null; then
               previous_version=$(git show "$BEFORE_SHA:ytd_cli/cli.py" | sed -nE 's/^VERSION = "([^"]+)"/\1/p' | head -n 1)
             elif git cat-file -e "$BEFORE_SHA:ytd.py" 2>/dev/null; then
               previous_version=$(git show "$BEFORE_SHA:ytd.py" | sed -nE 's/^VERSION = "([^"]+)"/\1/p' | head -n 1)
