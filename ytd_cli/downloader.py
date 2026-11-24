@@ -1,7 +1,8 @@
 import subprocess
 
 from .console import error
-from .settings import RED, RESET
+from .settings import RED, YELLOW, RESET
+from .yesno import YES_LIST
 
 # Download types
 DOWNLOAD = {
@@ -12,9 +13,25 @@ DOWNLOAD = {
 
 
 def download(option):
-    url = input("Enter URL: ")
-
     command = ["yt-dlp"]
+
+    url = input("Enter URL: ")
+    # TODO: sanitize and verify URL
+
+    if option != DOWNLOAD["AUDIO_ONLY"]:
+        subtitles = input("Do you want subtitles? (Y/n): ")
+        if not subtitles or subtitles in YES_LIST:
+            command.extend(
+                [
+                    "--embed-subs",
+                    "--sub-langs",
+                    "en.*,-live_chat",
+                    "--sub-format",
+                    "srt",
+                ]
+            )
+        else:
+            error(f"{YELLOW}Moving on with no subtitles{RESET}\n")
 
     if option == f"{DOWNLOAD['VIDEO_ONLY']}":
         command.extend(
