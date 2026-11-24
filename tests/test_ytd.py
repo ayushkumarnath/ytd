@@ -9,6 +9,7 @@ from unittest import mock
 
 from ytd_cli import cli, config, dependencies, downloader, menu
 from ytd_cli.exceptions import CLIError
+from ytd_cli.version import VERSION
 
 
 class ConfigTests(unittest.TestCase):
@@ -19,7 +20,7 @@ class ConfigTests(unittest.TestCase):
         self.download_dir = self.root / "downloads"
         self.config_path.parent.mkdir(parents=True)
         self.config_path.write_text(
-            f"-o {self.download_dir}/%(title)s.%(ext)s\n"
+            f'-o "{self.download_dir}/{config.OUTPUT_TEMPLATE}"\n'
         )
         self.config_patch = mock.patch.object(config, "CONFIG", self.config_path)
         self.default_dir_patch = mock.patch.object(config, "DEFAULT_DIR", self.download_dir)
@@ -43,11 +44,16 @@ class ConfigTests(unittest.TestCase):
         config.initialize_config()
         self.assertEqual(
             self.config_path.read_text(),
-            f"-o {self.download_dir}/%(title)s.%(ext)s",
+            f'-o "{config.DEFAULT_DIR}/{config.OUTPUT_TEMPLATE}"',
         )
 
     def test_get_download_dir_reads_output_template(self):
         self.assertEqual(config.get_download_dir(), self.download_dir)
+
+    def test_output_template_limits_title_by_utf8_byte_length(self):
+        self.assertEqual(config.BYTE_LEN, 120)
+        self.assertEqual(config.OUTPUT_TITLE, "%(title).120B")
+        self.assertEqual(config.OUTPUT_TEMPLATE, "%(title).120B.%(ext)s")
 
     def test_get_download_dir_returns_none_without_config(self):
         self.config_path.unlink()
@@ -62,7 +68,7 @@ class ConfigTests(unittest.TestCase):
         target = self.root / "media" / "new"
         self.assertTrue(target.is_dir())
         self.assertEqual(
-            self.config_path.read_text(), f"-o {target}/%(title)s.%(ext)s\n"
+            self.config_path.read_text(), f"-o {target}/{config.OUTPUT_TEMPLATE}\n"
         )
 
 
@@ -195,6 +201,7 @@ class CliTests(unittest.TestCase):
         with mock.patch.object(cli, "write", output.write):
             cli.print_version()
         self.assertEqual(output.getvalue(), f"ytd v{cli.VERSION}\n")
+        self.assertEqual(cli.VERSION, VERSION)
 
     def test_parse_help_exits_successfully(self):
         with mock.patch.object(cli, "print_help") as print_help:
