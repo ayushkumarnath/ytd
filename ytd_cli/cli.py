@@ -8,9 +8,7 @@ from .downloader import download
 from .exceptions import CLIError
 from .menu import fzf_process, options
 from .settings import RED, RESET
-
-
-VERSION = "2.0.3"
+from .version import VERSION
 
 
 def print_error(err_msg):
