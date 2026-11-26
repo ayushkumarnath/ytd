@@ -71,4 +71,4 @@ def download(option):
         return result.returncode
     except subprocess.CalledProcessError as e:
         error(f"{RED}Error: subprocess (yt-dlp): {e}{RESET}")
-        return 1
+        return e.returncode

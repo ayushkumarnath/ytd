@@ -206,7 +206,7 @@ class DownloaderTests(unittest.TestCase):
         ), mock.patch.object(downloader, "error", errors.write):
             result = downloader.download(downloader.DOWNLOAD["AUDIO_ONLY"])
 
-        self.assertEqual(result, 1)
+        self.assertEqual(result, 3)
         self.assertIn("subprocess (yt-dlp)", errors.getvalue())
 
 
