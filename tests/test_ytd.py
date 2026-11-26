@@ -166,6 +166,37 @@ class DownloaderTests(unittest.TestCase):
             ["yt-dlp", "-x", "--audio-format", "mp3", "url"],
         )
 
+    def test_download_strips_leading_and_trailing_url_whitespace(self):
+        with mock.patch(
+            "builtins.input", return_value="  \thttps://example.test/video \n"
+        ), mock.patch.object(
+            downloader.subprocess, "run", return_value=mock.Mock(returncode=0)
+        ) as run:
+            result = downloader.download(downloader.DOWNLOAD["AUDIO_ONLY"])
+
+        self.assertEqual(
+            run.call_args.args[0],
+            ["yt-dlp", "-x", "--audio-format", "mp3", "https://example.test/video"],
+        )
+        self.assertEqual(result, 0)
+
+    def test_download_reports_invalid_url_failure_from_yt_dlp(self):
+        errors = io.StringIO()
+        invalid_url = "not a valid URL"
+        with mock.patch("builtins.input", return_value=invalid_url), mock.patch.object(
+            downloader.subprocess,
+            "run",
+            side_effect=downloader.subprocess.CalledProcessError(1, "yt-dlp"),
+        ) as run, mock.patch.object(downloader, "error", errors.write):
+            result = downloader.download(downloader.DOWNLOAD["AUDIO_ONLY"])
+
+        self.assertEqual(
+            run.call_args.args[0],
+            ["yt-dlp", "-x", "--audio-format", "mp3", invalid_url],
+        )
+        self.assertEqual(result, 1)
+        self.assertIn("subprocess (yt-dlp)", errors.getvalue())
+
     def test_download_returns_failure_status_when_subprocess_fails(self):
         errors = io.StringIO()
         with mock.patch("builtins.input", return_value="url"), mock.patch.object(

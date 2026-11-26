@@ -15,8 +15,12 @@ DOWNLOAD = {
 def download(option):
     command = ["yt-dlp"]
 
-    url = input("Enter URL: ")
-    # TODO: sanitize and verify URL
+    """
+    Since yt-dlp handles invalid and unsupported URLs, I am not gonna waste
+    time implementing a custom URL validator myself. I will just feed yt-dlp
+    the whitespace-stripped version of the URL, it'll take care of the rest.
+    """
+    url = input("Enter URL: ").strip()
 
     if option != DOWNLOAD["AUDIO_ONLY"]:
         subtitles = input("Do you want subtitles? (Y/n): ")
